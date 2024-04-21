@@ -40,6 +40,7 @@ import {OB11GroupTitleEvent} from "./event/notice/OB11GroupTitleEvent";
 import {OB11GroupCardEvent} from "./event/notice/OB11GroupCardEvent";
 import {OB11GroupDecreaseEvent} from "./event/notice/OB11GroupDecreaseEvent";
 import {NTQQGroupApi} from "../ntqqapi/api";
+import { OB11GroupReactionEvent } from "./event/notice/OB11GroupReactionEvent";
 
 let lastRKeyUpdateTime = 0;
 
@@ -338,9 +339,22 @@ export class OB11Constructor {
       }
 
       if (grayTipElement) {
-        if (grayTipElement.subElementType == GrayTipElementSubType.INVITE_NEW_MEMBER) {
-          log("收到新人被邀请进群消息", grayTipElement)
+        if (grayTipElement.subElementType == GrayTipElementSubType.INVITE_NEW_MEMBER_OR_NEW_REACTION) {
           const xmlElement = grayTipElement.xmlElement
+          if(xmlElement.busiType === "4" && xmlElement.busiId === "19270" && xmlElement?.content) {
+            log("收到新的表情回应", grayTipElement)
+            let faceRegex = /<face type="([12])" id="([0-9]+)">/
+            let senderRegex = /<qq uin="[0-9a-zA-Z]+".+jp="([0-9]+)"\/>/
+            let messageRegex = /<url.+msgseq="([0-9]+)".+\/>/
+            const [faceFull, faceType, faceId,] = faceRegex.exec(xmlElement.content)
+            const [senderFull, senderId,] = senderRegex.exec(xmlElement.content)
+            const [msgFull, msgSeqId,] = messageRegex.exec(xmlElement.content)
+            const msg = await dbUtil.getMsgBySeqId(msgSeqId)
+            return new OB11GroupReactionEvent(parseInt(msg.peerUid), parseInt(senderId), msg?.msgId,parseInt(faceId),parseInt(faceType))
+          }
+
+          log("收到新人被邀请进群消息", grayTipElement)
+
           if (xmlElement?.content) {
             const regex = /jp="(\d+)"/g;
 

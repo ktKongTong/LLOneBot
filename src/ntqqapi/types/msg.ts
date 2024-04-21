@@ -188,8 +188,8 @@ export interface PicElement {
 }
 
 export enum GrayTipElementSubType {
-    INVITE_NEW_MEMBER = 12,
-    MEMBER_NEW_TITLE = 17
+    INVITE_NEW_MEMBER_OR_NEW_REACTION = 12,
+    MEMBER_NEW_TITLE = 17,
 }
 
 export interface GrayTipElement {
@@ -205,7 +205,10 @@ export interface GrayTipElement {
     aioOpGrayTipElement: TipAioOpGrayTipElement,
     groupElement: TipGroupElement,
     xmlElement: {
+        busiType:string;
+        busiId: string;
         content: string;
+        [key:string]:any;
     },
     jsonGrayTipElement: {
         jsonStr: string;
